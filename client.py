@@ -6,16 +6,17 @@ import socket
 import threading
 from math import log2, ceil
 from typing import List
+import tkinter as tk
 
 
 class Client:
     def __init__(self):
         self.host = socket.gethostbyname(socket.gethostname())
-        self.port = random.randint(6000, 10000)
+        self.port = 80
         self.host2 = None
-        self.port2 = None
         self.filename = f'history_{self.host}_{self.port}.json'
         self.history_dict = self.load_history()
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def load_history(self):
         if not os.path.exists(self.filename):
@@ -28,45 +29,57 @@ class Client:
         return history_json
 
     # @staticmethod
-    def receive_data(self, sock):
+    def receive_data(self):
         while True:
             try:
-                data, addr = sock.recvfrom(1024)
+                data, addr = self.socket.recvfrom(1024)
                 hamming_message = data.decode('utf-8')
-                hamming_decoded_message = self.hamming_decode(hamming_message)
+                # hamming_decoded_message = self.hamming_decode(hamming_message)
+                hamming_decoded_message = hamming_message
                 self.write_to_history(hamming_decoded_message, hamming_message)
                 print(addr, hamming_decoded_message)
             except:
                 pass
 
-    def run_client(self):
-        print('Is hosting on IP-> ' + str(self.host) + ':' + str(self.port))
-
-        # self.host2 = input('Enter host: ')
+    def run_receiving(self, text):
         self.host2 = self.host
-        self.port2 = int(input('Enter port: '))
-
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.bind((self.host, self.port))
-
-        threading.Thread(target=self.receive_data, args=(s,)).start()
+        self.socket.bind((self.host, self.port))
 
         while True:
-            text_message = input()
-            if not text_message:
-                break
-            hamming_message = self.hamming_encode(text_message)
-            self.write_to_history(text_message, hamming_message)
+            try:
+                data, addr = self.socket.recvfrom(1024)
+                hamming_message = data.decode('utf-8')
+                # hamming_decoded_message = self.hamming_decode(hamming_message)
+                hamming_decoded_message = hamming_message
+                self.write_to_history(hamming_decoded_message, hamming_message, addr[0], text)
+                print(addr, hamming_decoded_message)
+            except:
+                pass
 
-            s.sendto(hamming_message.encode('utf-8'), (self.host2, self.port2))
-        s.close()
+        # print('here')
+        # s.close()
         # os.exit(1)
 
-    def write_to_history(self, text_message, hamming_message):
+    def send(self, text_message_entry, text_widget):
+        # test
+        self.host2 = self.host
+        text_message = text_message_entry.get()
+        hamming_message = text_message
+        text_message_entry.delete("0", tk.END)
+        # тут нужно закодировать Хэммингом
+
+        if hamming_message:
+            try:
+                self.socket.sendto(hamming_message.encode('utf-8'), (self.host2, 81))
+                self.write_to_history(text_message, hamming_message, self.host, text_widget)
+            except TypeError:
+                print('Enter IP of host2')
+
+    def write_to_history(self, text_message, hamming_message, address, txt_widget):
         data = {
             'time': str(datetime.datetime.now()),
-            'sender': ':'.join((self.host, str(self.port))),
-            'receiver': ':'.join((self.host2, str(self.port2))),
+            'sender': self.host,
+            'receiver': ':'.join((self.host2, str(self.port))),
             'text': text_message,
             'hamming_code': hamming_message,
         }
@@ -74,6 +87,8 @@ class Client:
         with open(self.filename, 'w', encoding='utf-8') as file:
             json.dump(self.history_dict, file)
             file.write('\n')
+        message = f'{address}: {text_message}\n\n'
+        txt_widget.insert(tk.END, message)
 
     def str_to_binary(self, string):
         binary_list = []
