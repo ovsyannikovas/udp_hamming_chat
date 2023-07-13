@@ -2,8 +2,6 @@ import datetime
 import json
 import os
 import socket
-from math import log2, ceil
-from typing import List
 import tkinter as tk
 from tkinter import messagebox as mb
 from hamming import Hamming
@@ -15,11 +13,9 @@ class Client:
         self.port = 80
         self.host2 = None
         self.filename = f'history_{self.host}_{self.port}.json'
-        self.history_dict = self.load_history()
-        self.is_running = False
-        # self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.history_dict = self._load_history_to_dict()
 
-    def load_history(self):
+    def _load_history_to_dict(self):
         if not os.path.exists(self.filename):
             history_json = {'messages': []}
             with open(self.filename, 'w', encoding='utf-8') as file:
@@ -43,7 +39,7 @@ class Client:
                 hamming_message = data.decode('utf-8')
                 # hamming_decoded_message = self.hamming_decode(hamming_message)
                 hamming_decoded_message = Hamming.decode(hamming_message)
-                self.write_to_history(hamming_decoded_message, hamming_message, addr[0], self.host, text)
+                self._write_to_history(hamming_decoded_message, hamming_message, addr[0], self.host, text)
                 print(addr, hamming_decoded_message)
             except:
                 print('Exception')
@@ -54,7 +50,9 @@ class Client:
         hamming_message = hamming_widget['text']
         if not text_message:
             return
+
         text_message_entry.delete("0", tk.END)
+        mistake_widget.insert(0, '0')
         # hamming_widget.delete("0", tk.END)
         # mistake_widget.delete("0", tk.END)
 
@@ -62,11 +60,11 @@ class Client:
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 s.sendto(hamming_message.encode('utf-8'), (self.host2, self.port))
-                self.write_to_history(text_message, hamming_message, self.host, self.host2, text_widget)
+                self._write_to_history(text_message, hamming_message, self.host, self.host2, text_widget)
             except TypeError:
                 mb.showinfo('Заголовок', 'Введите хост!')
 
-    def write_to_history(self, text_message, hamming_message, sender, receiver, txt_widget):
+    def _write_to_history(self, text_message, hamming_message, sender, receiver, txt_widget):
         data = {
             'time': str(datetime.datetime.now()),
             'sender': sender,
@@ -80,9 +78,3 @@ class Client:
             file.write('\n')
         message = f'{sender}: {text_message}\n\n'
         txt_widget.insert(tk.END, message)
-
-    def str_to_binary(self, string):
-        binary_list = []
-        for char in string:
-            binary_list.append(bin(ord(char))[2:].zfill(8))
-        return ''.join(binary_list)

@@ -22,13 +22,13 @@ class GUI:
 
         self.receiving_thread = threading.Thread(target=self.client.run_receiving, args=(txt,))
 
-        ip_connect = tk.Button(root, text='Connect', command=self.connect).grid(row=1, column=2)
+        ip_connect = tk.Button(root, text='Connect', command=self._connect).grid(row=1, column=2)
 
         # scrollbar = tk.Scrollbar(txt)
         # scrollbar.place(relheight=1, relx=0.974)
 
         # threading.Thread(target=self.load_history, args=(txt,)).start()
-        self.load_history(txt)
+        self._load_history(txt)
 
         text_message_label = tk.Label(root, text='Сообщение', width=10).grid(row=3, column=0)
         hamming_message_label = tk.Label(root, text='Код Хэмминга', width=15).grid(row=4, column=0)
@@ -38,7 +38,7 @@ class GUI:
         self.text_message.grid(row=3, column=1)
         self.hamming_message = tk.Label(root, width=40, justify=tk.LEFT)
         self.hamming_message.grid(row=4, column=1)
-        self.text_message.bind('<KeyRelease>', self.encode_hamming)
+        self.text_message.bind('<KeyRelease>', self._encode_hamming)
         mistake = tk.Entry(root, width=10, justify=tk.LEFT, text='0')
         mistake.grid(row=5, column=1)
         mistake.insert(0, '0')
@@ -51,12 +51,12 @@ class GUI:
         # root.protocol("WM_DELETE_WINDOW", self.on_closing)
         root.mainloop()
 
-    def connect(self):
+    def _connect(self):
         self.client.host2 = self.ip_address.get()
         self.client.is_running = True
         self.receiving_thread.start()
 
-    def load_history(self, text_widget):
+    def _load_history(self, text_widget):
         for message in self.client.history_dict['messages']:
             message = f'{message["sender"]}: {message["text"]}\n\n'
             text_widget.insert(tk.END, message)
@@ -65,8 +65,7 @@ class GUI:
         print('Closing...')
         sys.exit()
 
-    def encode_hamming(self, event):
+    def _encode_hamming(self, event):
         text = self.text_message.get()
         hamming_message = Hamming.encode(text)
-        # hamming_message = text
         self.hamming_message.config(text=hamming_message)
