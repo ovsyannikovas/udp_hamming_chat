@@ -44,7 +44,8 @@ class GUI:
         mistake.insert(0, '0')
         # text_message
 
-        send = tk.Button(root, text="Send", command=lambda: self.client.send(self.text_message, txt))
+        send = tk.Button(root, text="Send", command=lambda: self.client.send(self.text_message, txt,
+                                                                             self.hamming_message, mistake))
         send.grid(row=3, column=2, rowspan=2)
 
         # root.protocol("WM_DELETE_WINDOW", self.on_closing)

@@ -43,32 +43,34 @@ class Client:
                 hamming_message = data.decode('utf-8')
                 # hamming_decoded_message = self.hamming_decode(hamming_message)
                 hamming_decoded_message = Hamming.decode(hamming_message)
-                self.write_to_history(hamming_decoded_message, hamming_message, addr[0], text)
+                self.write_to_history(hamming_decoded_message, hamming_message, addr[0], self.host, text)
                 print(addr, hamming_decoded_message)
             except:
                 print('Exception')
                 pass
 
-    def send(self, text_message_entry, text_widget):
-        # test
+    def send(self, text_message_entry, text_widget, hamming_widget, mistake_widget):
         text_message = text_message_entry.get()
-        hamming_message = Hamming.encode(text_message)
+        hamming_message = hamming_widget['text']
+        if not text_message:
+            return
         text_message_entry.delete("0", tk.END)
+        # hamming_widget.delete("0", tk.END)
+        # mistake_widget.delete("0", tk.END)
 
         if hamming_message:
             try:
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                # s.sendto(hamming_message.encode('utf-8'), (self.host2, self.port))
-                s.sendto(hamming_message.encode('utf-8'), (self.host2, 88))
-                self.write_to_history(text_message, hamming_message, self.host, text_widget)
+                s.sendto(hamming_message.encode('utf-8'), (self.host2, self.port))
+                self.write_to_history(text_message, hamming_message, self.host, self.host2, text_widget)
             except TypeError:
                 mb.showinfo('Заголовок', 'Введите хост!')
 
-    def write_to_history(self, text_message, hamming_message, address, txt_widget):
+    def write_to_history(self, text_message, hamming_message, sender, receiver, txt_widget):
         data = {
             'time': str(datetime.datetime.now()),
-            'sender': self.host,
-            'receiver': ':'.join((self.host2, str(self.port))),
+            'sender': sender,
+            'receiver': receiver,
             'text': text_message,
             'hamming_code': hamming_message,
         }
@@ -76,7 +78,7 @@ class Client:
         with open(self.filename, 'w', encoding='utf-8') as file:
             json.dump(self.history_dict, file)
             file.write('\n')
-        message = f'{address}: {text_message}\n\n'
+        message = f'{sender}: {text_message}\n\n'
         txt_widget.insert(tk.END, message)
 
     def str_to_binary(self, string):
@@ -84,9 +86,3 @@ class Client:
         for char in string:
             binary_list.append(bin(ord(char))[2:].zfill(8))
         return ''.join(binary_list)
-
-
-
-# if __name__ == '__main__':
-#     client = Client()
-#     client.run_client()
