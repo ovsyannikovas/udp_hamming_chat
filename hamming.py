@@ -2,6 +2,8 @@ from math import log2
 
 
 class Hamming:
+    def __init__(self):
+        self.control_bits_num = 3
 
     @staticmethod
     def encode(message, mistake='0'):
@@ -19,10 +21,8 @@ class Hamming:
         result = ""
 
         log_len = log2(len(datalist))
-        count = int(log2(len(datalist))) + 1
-        if log_len - int(log_len) == 0:
-            count -= 1
-        print(count)
+        count = int(log_len) + 1
+        # print(count)
 
         # расставляем пустые биты
         checkbits = count
@@ -38,7 +38,7 @@ class Hamming:
             lst = []
             for i in range(check - 1, len(datalist), 2 * check):
                 lst.extend(datalist[i:i + check])
-            print(check, lst)
+            # print(check, lst)
             check *= 2
 
             # считаем единички
@@ -53,7 +53,7 @@ class Hamming:
             else:
                 lst[0] = "1"
                 checkbits += "1"
-        print(checkbits)
+        # print(checkbits)
 
         # составляем строку ответа
         c = 0
@@ -90,7 +90,8 @@ class Hamming:
         datalistcopy = list(message)
 
         # расставляем пустые биты
-        count = int(log2(len(message)))
+        # count = int(log2(len(message)))
+        count = 6
         print(count)
         for i in range(count):
             pos = (2 ** i) - 1
@@ -154,6 +155,8 @@ class Hamming:
 
     @staticmethod
     def __make_mistake_in_encoded_message(message, mistake='0'):
+        if mistake == '0':
+            return message
         dec_mistake = int(mistake)
         dec_message = int(message, 2)
         res = dec_message ^ dec_mistake
@@ -161,22 +164,5 @@ class Hamming:
 
 
 if __name__ == '__main__':
-    # encoded = Hamming._hamming_encode('10110101')
-    # print(encoded)
-    # assert encoded == '001101100101'
-    # decoded = Hamming.decode('001101100101')
-    # print(decoded)
-    # assert decoded == '10110101'
-
-    print(Hamming.encode('go'))
-    # assert '101110011111101011111001111101111' == Hamming.encode('gogo')
-    # print(Hamming.decode(Hamming.encode('go')))
-    print(Hamming.decode('111010001111101111'))
-    # print(Hamming._bin_to_str('11001111101111'))
-    # assert Hamming.decode('101110011111101011111001111101111') == Hamming._str_to_bin('gogo')
-
-    # 110011111011111100111110111
-    # 1100111110111111001111101111
-
-    # 1100111110111111001111101111 28 -> 4 + 1 bits
-    # 101110011111101011111001111101111 32
+    Hamming.encode('hello')
+    print(Hamming.decode("10111011000110001011101100110110001101111"))
