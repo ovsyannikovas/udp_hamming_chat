@@ -162,6 +162,8 @@ class Hamming:
         except ValueError:
             return message
         dec_message = int(message, 2)
+        if dec_mistake > dec_message:
+            return message
         res = dec_message ^ dec_mistake
         return bin(res)[2:]
 
