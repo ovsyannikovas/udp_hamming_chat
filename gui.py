@@ -17,8 +17,8 @@ class GUI:
         self.ip_address.grid(row=1, column=1, columnspan=2)
         self.ip_address.bind('<KeyRelease>', self._enter_host2)
 
-        self.txt = tk.Text(self.root, width=60)
-        self.txt.grid(row=2, column=0, columnspan=2)
+        self.txt = tk.Text(self.root, width=70)
+        self.txt.grid(row=2, column=0, columnspan=3)
 
         self.receiving_thread = threading.Thread(target=self.backend.run_receiving)
         self.receiving_thread.start()
@@ -48,6 +48,14 @@ class GUI:
     def _enter_host2(self, event):
         self.backend.host2 = self.ip_address.get()
 
+    def _insert_message(self, message):
+        message = f'''
+[{message['time'][:-7]}] {message["sender"]}: 
+    message: {message['text']}
+    hamming_code: {message['hamming_code']}
+ {'-' * 68} '''
+        self.txt.insert(tk.END, message)
+
     def _send(self):
         text_message = self.text_message.get()
         if not text_message:
@@ -61,8 +69,7 @@ class GUI:
             mb.showinfo('', 'Неверный хост!')
             return
         self._clear_message_data()
-        message = f'{self.backend.host}: {text_message}\n\n'
-        self.txt.insert(tk.END, message)
+        self._insert_message(self.backend.history_dict['messages'][-1])
 
     def _clear_message_data(self):
         self.text_message.delete("0", tk.END)
@@ -72,8 +79,7 @@ class GUI:
 
     def _load_history(self):
         for message in self.backend.history_dict['messages']:
-            message = f'{message["sender"]}: {message["text"]}\n\n'
-            self.txt.insert(tk.END, message)
+            self._insert_message(message)
 
     def _on_closing(self):
         if self.backend.receiving_socket:
@@ -81,7 +87,7 @@ class GUI:
         self.root.destroy()
 
     def _encode_hamming(self, event):
-        text = self.text_message.get()
+        text = self.text_message.get().strip()
         mistake = self.mistake.get().strip()
         if not text:
             return

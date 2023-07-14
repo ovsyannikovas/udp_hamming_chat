@@ -157,7 +157,10 @@ class Hamming:
     def __make_mistake_in_encoded_message(message, mistake='0'):
         if mistake == '0':
             return message
-        dec_mistake = int(mistake)
+        try:
+            dec_mistake = int(mistake)
+        except ValueError:
+            return message
         dec_message = int(message, 2)
         res = dec_message ^ dec_mistake
         return bin(res)[2:]
