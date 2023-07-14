@@ -1,18 +1,18 @@
 import sys
 import threading
 
-from client import Client
+from backend import Backend
 import tkinter as tk
 from hamming import Hamming
 
 
 class GUI:
     def __init__(self):
-        self.client = Client()
+        self.backend = Backend()
         root = tk.Tk()
 
-        my_ip_address_label = tk.Label(root, text='My host: ' + self.client.host, width=30).grid(row=0, column=0,
-                                                                                                 columnspan=2)
+        my_ip_address_label = tk.Label(root, text='My host: ' + self.backend.host, width=30).grid(row=0, column=0,
+                                                                                                  columnspan=2)
         ip_address_label = tk.Label(root, text='Enter IP address', width=16).grid(row=1, column=0)
         self.ip_address = tk.Entry(root, width=30)
         self.ip_address.grid(row=1, column=1, columnspan=2)
@@ -20,12 +20,9 @@ class GUI:
         txt = tk.Text(root, width=60)
         txt.grid(row=2, column=0, columnspan=2)
 
-        self.receiving_thread = threading.Thread(target=self.client.run_receiving, args=(txt,))
+        self.receiving_thread = threading.Thread(target=self.backend.run_receiving, args=(txt,))
 
         ip_connect = tk.Button(root, text='Connect', command=self._connect).grid(row=1, column=2)
-
-        # scrollbar = tk.Scrollbar(txt)
-        # scrollbar.place(relheight=1, relx=0.974)
 
         # threading.Thread(target=self.load_history, args=(txt,)).start()
         self._load_history(txt)
@@ -39,25 +36,26 @@ class GUI:
         self.hamming_message = tk.Label(root, width=40, justify=tk.LEFT)
         self.hamming_message.grid(row=4, column=1)
         self.text_message.bind('<KeyRelease>', self._encode_hamming)
-        mistake = tk.Entry(root, width=10, justify=tk.LEFT, text='0')
-        mistake.grid(row=5, column=1)
-        mistake.insert(0, '0')
+        self.mistake = tk.Entry(root, width=10, justify=tk.LEFT, text='0')
+        self.mistake.grid(row=5, column=1)
+        self.mistake.insert(0, '0')
+        self.mistake.bind('<KeyRelease>', self._encode_hamming)
         # text_message
 
-        send = tk.Button(root, text="Send", command=lambda: self.client.send(self.text_message, txt,
-                                                                             self.hamming_message, mistake))
+        send = tk.Button(root, text="Send", command=lambda: self.backend.send(self.text_message, txt,
+                                                                              self.hamming_message, self.mistake))
         send.grid(row=3, column=2, rowspan=2)
 
         # root.protocol("WM_DELETE_WINDOW", self.on_closing)
         root.mainloop()
 
     def _connect(self):
-        self.client.host2 = self.ip_address.get()
-        self.client.is_running = True
+        self.backend.host2 = self.ip_address.get()
+        self.backend.is_running = True
         self.receiving_thread.start()
 
     def _load_history(self, text_widget):
-        for message in self.client.history_dict['messages']:
+        for message in self.backend.history_dict['messages']:
             message = f'{message["sender"]}: {message["text"]}\n\n'
             text_widget.insert(tk.END, message)
 
@@ -67,5 +65,6 @@ class GUI:
 
     def _encode_hamming(self, event):
         text = self.text_message.get()
-        hamming_message = Hamming.encode(text)
+        mistake = self.mistake.get()
+        hamming_message = Hamming.encode(text, mistake)
         self.hamming_message.config(text=hamming_message)

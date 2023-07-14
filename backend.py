@@ -7,7 +7,7 @@ from tkinter import messagebox as mb
 from hamming import Hamming
 
 
-class Client:
+class Backend:
     def __init__(self):
         self.host = socket.gethostbyname(socket.gethostname())
         self.port = 80
