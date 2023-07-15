@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import socket
+
 from hamming import Hamming
 
 
@@ -24,7 +25,7 @@ class Backend:
                 history_json = json.loads(file.read())
         return history_json
 
-    def run_receiving(self):
+    def run_receiving(self, gui_text):
         self.receiving_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.receiving_socket.bind((self.host, self.port))
 
@@ -38,6 +39,7 @@ class Backend:
             hm = Hamming()
             hamming_decoded_message = hm.decode(hamming_message)
             self._write_to_history(hamming_decoded_message, hamming_message, addr[0], self.host)
+            gui_text.insert_message(self.history_dict['messages'][-1])
 
     def send(self, text_message, hamming_message):
 
