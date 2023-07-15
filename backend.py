@@ -8,7 +8,7 @@ from hamming import Hamming
 class Backend:
     def __init__(self):
         self.host = socket.gethostbyname(socket.gethostname())
-        self.port = 80
+        self.port = 5000
         self.host2 = None
         self.filename = f'history_{self.host}.json'
         self.history_dict = self._load_history_to_dict()

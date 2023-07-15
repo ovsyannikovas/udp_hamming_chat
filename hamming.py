@@ -3,18 +3,52 @@ from math import log2
 
 class Hamming:
     def __init__(self):
-        self.control_bits_num = 3
+        # self._generating_matrix_filename = 'generating_matrix.txt'
+        # self.generating_matrix = self._generate_matrix()
+        self.generating_matrix = [0] + [0 if log2(i + 1) - int(log2(i + 1)) == 0 else None for i in range(1, 50)]
+        self.hamming_message_len = None
 
-    @staticmethod
-    def encode(message, mistake='0'):
+    def _fill_generating_matrix(self, message):
+        gen_index = 2
+        msg_index = 0
+        while msg_index < len(message):
+            # if gen_index > len(self.generating_matrix[0]): ...
+            if self.generating_matrix[gen_index] is None:
+                self.generating_matrix[gen_index] = int(message[msg_index])
+                msg_index += 1
+            gen_index += 1
+        self.hamming_message_len = gen_index
+        # print(self.hamming_message_len)
+        # print(self.generating_matrix)
+
+    def encode(self, message, mistake='0'):
         bin_message = Hamming._str_to_bin(message)
         print(f'bin_message: {bin_message}')
-        hamming_message = Hamming._hamming_encode(bin_message)
+        hamming_message = self._hamming_encode(bin_message)
         print(f'hamming_message: {hamming_message}')
         return Hamming.__make_mistake_in_encoded_message(hamming_message, mistake)
 
+    def _hamming_encode(self, message):
+        self._fill_generating_matrix(message)
+        # print(self.generating_matrix)
+
+        check = 1
+        while check <= self.hamming_message_len:
+            lst = []
+            for i in range(check - 1, self.hamming_message_len, 2 * check):
+                line = map(lambda x: 0 if not x else x, self.generating_matrix[i:i + check])
+                lst.extend(line)
+            # print(check, lst)
+            counter = sum(lst)
+            self.generating_matrix[check - 1] = 1 if counter % 2 else 0
+            # print(self.generating_matrix)
+            check *= 2
+
+        # print(self.generating_matrix)
+        return ''.join(map(str, self.generating_matrix[:self.hamming_message_len]))
+
     @staticmethod
-    def _hamming_encode(message):
+    def _hamming_encode2(message):
         # if all(char in '01' for char in data) and data != "":
         datalist = list(message)
         datalistcopy = list(message)
@@ -38,7 +72,7 @@ class Hamming:
             lst = []
             for i in range(check - 1, len(datalist), 2 * check):
                 lst.extend(datalist[i:i + check])
-            # print(check, lst)
+            print(check, lst)
             check *= 2
 
             # считаем единички
@@ -53,7 +87,7 @@ class Hamming:
             else:
                 lst[0] = "1"
                 checkbits += "1"
-        # print(checkbits)
+        print(checkbits)
 
         # составляем строку ответа
         c = 0
@@ -84,14 +118,30 @@ class Hamming:
 
         return str_data
 
+    def decode(self, message):
+        msg_without_control_bits = ''
+        check_bits = []
+        for i in range(2, len(message)):
+            if log2(i + 1) - int(log2(i + 1)) != 0:
+                msg_without_control_bits = ''.join((msg_without_control_bits, message[i]))
+            else:
+                check_bits.append(message[i])
+        # print(msg_without_control_bits)
+        encoded = self._hamming_encode(msg_without_control_bits)
+
+        fixed_message = self._fix_errors(message, encoded)
+        bin_result = Hamming._delete_control_bits(fixed_message)
+        string_result = Hamming._bin_to_str(''.join(bin_result))
+        return string_result
+
     @staticmethod
-    def decode(message):
+    def decode2(message):
         datalist = list(message)
         datalistcopy = list(message)
 
         # расставляем пустые биты
-        # count = int(log2(len(message)))
-        count = 6
+        count = int(log2(len(message)))
+        # count = 6
         print(count)
         for i in range(count):
             pos = (2 ** i) - 1
@@ -128,27 +178,28 @@ class Hamming:
         string_result = Hamming._bin_to_str(''.join(bin_result))
         return string_result
 
-    @staticmethod
-    def _fix_errors(checkbits, datalist, datalistcopy):
+    def _fix_errors(self, original, encoded):
         error_bits = []
-        for i in range(len(checkbits)):
-            # print(checkbits[i], datalist[2 ** i - 1])
-            if checkbits[i] != datalist[2 ** i - 1]:
-                error_bits.append(2 ** i)
+        i = 1
+        while i < self.hamming_message_len:
+            if original[i - 1] != encoded[i - 1]:
+                error_bits.append(i)
+            i *= 2
+
+        error_bits_sum_index = sum(error_bits) - 1
         if error_bits:
-            error_bits_sum = sum(error_bits) - 1
-            if datalist[error_bits_sum] == '0':
-                datalist[error_bits_sum] = '1'
-            else:
-                datalist[error_bits_sum] = '0'
-        print(error_bits)
+            new_bit = '1' if original[error_bits_sum_index] == '0' else '0'
+        else:
+            return original
+        # print(error_bits)
+        return ''.join((encoded[:error_bits_sum_index], new_bit, encoded[error_bits_sum_index + 1:]))
 
     @staticmethod
-    def _delete_control_bits(datalist, count):
+    def _delete_control_bits(datalist):
         res = []
 
         for i in range(2, len(datalist)):
-            if log2(i + 1) - int(log2(i + 1)) != 0 or i + 1 == 2 ** count:
+            if log2(i + 1) - int(log2(i + 1)) != 0:
                 res.append(datalist[i])
 
         return res
@@ -169,5 +220,11 @@ class Hamming:
 
 
 if __name__ == '__main__':
-    Hamming.encode('hello')
-    print(Hamming.decode("10111011000110001011101100110110001101111"))
+    hm = Hamming()
+    # print(hm.generating_matrix)
+    # msg = '10101010110'
+    # print(len(msg))
+    # hm._fill_generating_matrix(msg)
+    print(hm.encode('go'))
+    hm = Hamming()
+    print(hm.decode('0010100011111011111'))

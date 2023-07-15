@@ -9,6 +9,7 @@ class GUI:
     def __init__(self):
         self.backend = Backend()
         self.root = tk.Tk()
+        self.root.resizable(False, False)
 
         my_ip_address_label = tk.Label(self.root, text='My host: ' + self.backend.host, width=30).grid(row=0, column=0,
                                                                                                        columnspan=2)
@@ -53,8 +54,9 @@ class GUI:
 [{message['time'][:-7]}] {message["sender"]}: 
     message: {message['text']}
     hamming_code: {message['hamming_code']}
- {'-' * 68} '''
+ {'-' * (int(self.txt['width']) - 2)} '''
         self.txt.insert(tk.END, message)
+        self.txt.yview_moveto(1)
 
     def _send(self):
         text_message = self.text_message.get()
