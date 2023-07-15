@@ -53,8 +53,8 @@ class GUI:
     def insert_message(self, message):
         message = f'''
 [{message['time'][:-7]}] {message["sender"]}: 
-    message: {message['text']}
-    hamming_code: {message['hamming_code']}
+    Сообщение: {message['text']}
+    Код Хэмминга: {message['hamming_code']}
  {'-' * (int(self.txt['width']) - 2)} '''
         self.txt.insert(tk.END, message)
         self.txt.yview_moveto(1)
