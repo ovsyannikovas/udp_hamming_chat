@@ -47,61 +47,61 @@ class Hamming:
         # print(self.generating_matrix)
         return ''.join(map(str, self.generating_matrix[:self.hamming_message_len]))
 
-    @staticmethod
-    def _hamming_encode2(message):
-        # if all(char in '01' for char in data) and data != "":
-        datalist = list(message)
-        datalistcopy = list(message)
-        result = ""
-
-        log_len = log2(len(datalist))
-        count = int(log_len) + 1
-        # print(count)
-
-        # расставляем пустые биты
-        checkbits = count
-        for i in range(checkbits):
-            pos = (2 ** i) - 1
-            datalist.insert(pos, '*')
-            datalistcopy.insert(pos, '*')
-
-        check = 1
-        checkbits = []
-        while check <= len(datalist):
-            # берем в lst нужные биты для текущего бита
-            lst = []
-            for i in range(check - 1, len(datalist), 2 * check):
-                lst.extend(datalist[i:i + check])
-            print(check, lst)
-            check *= 2
-
-            # считаем единички
-            counter = 0
-            for u in range(len(lst)):
-                if lst[u] == "1":
-                    counter += 1
-            # ставим наш бит
-            if counter % 2 == 0:
-                lst[0] = "0"
-                checkbits += "0"
-            else:
-                lst[0] = "1"
-                checkbits += "1"
-        print(checkbits)
-
-        # составляем строку ответа
-        c = 0
-        for e in range(0, len(datalist)):
-            if datalist[e] == "*":
-                result += checkbits[c]
-                c += 1
-            else:
-                result += datalist[e]
-
-        return result
-
-    # else:
-    #     return "Error: Input must be binary!"
+    # @staticmethod
+    # def _hamming_encode2(message):
+    #     # if all(char in '01' for char in data) and data != "":
+    #     datalist = list(message)
+    #     datalistcopy = list(message)
+    #     result = ""
+    #
+    #     log_len = log2(len(datalist))
+    #     count = int(log_len) + 1
+    #     # print(count)
+    #
+    #     # расставляем пустые биты
+    #     checkbits = count
+    #     for i in range(checkbits):
+    #         pos = (2 ** i) - 1
+    #         datalist.insert(pos, '*')
+    #         datalistcopy.insert(pos, '*')
+    #
+    #     check = 1
+    #     checkbits = []
+    #     while check <= len(datalist):
+    #         # берем в lst нужные биты для текущего бита
+    #         lst = []
+    #         for i in range(check - 1, len(datalist), 2 * check):
+    #             lst.extend(datalist[i:i + check])
+    #         print(check, lst)
+    #         check *= 2
+    #
+    #         # считаем единички
+    #         counter = 0
+    #         for u in range(len(lst)):
+    #             if lst[u] == "1":
+    #                 counter += 1
+    #         # ставим наш бит
+    #         if counter % 2 == 0:
+    #             lst[0] = "0"
+    #             checkbits += "0"
+    #         else:
+    #             lst[0] = "1"
+    #             checkbits += "1"
+    #     print(checkbits)
+    #
+    #     # составляем строку ответа
+    #     c = 0
+    #     for e in range(0, len(datalist)):
+    #         if datalist[e] == "*":
+    #             result += checkbits[c]
+    #             c += 1
+    #         else:
+    #             result += datalist[e]
+    #
+    #     return result
+    #
+    # # else:
+    # #     return "Error: Input must be binary!"
 
     @staticmethod
     def _str_to_bin(string):
@@ -134,49 +134,49 @@ class Hamming:
         string_result = Hamming._bin_to_str(''.join(bin_result))
         return string_result
 
-    @staticmethod
-    def decode2(message):
-        datalist = list(message)
-        datalistcopy = list(message)
-
-        # расставляем пустые биты
-        count = int(log2(len(message)))
-        # count = 6
-        print(count)
-        for i in range(count):
-            pos = (2 ** i) - 1
-            # datalist.insert(pos, '*')
-            datalistcopy[pos] = '*'
-        print(datalistcopy)
-
-        check = 1
-        checkbits = []
-        while check <= len(datalist):
-            # берем в lst нужные биты для текущего бита
-            lst = []
-            for i in range(check - 1, len(datalistcopy), 2 * check):
-                lst.extend(datalistcopy[i:i + check])
-            print(check, lst)
-            check *= 2
-
-            # считаем единички
-            counter = 0
-            for u in range(len(lst)):
-                if lst[u] == "1":
-                    counter += 1
-            # ставим наш бит
-            if counter % 2 == 0:
-                lst[0] = "0"
-                checkbits += "0"
-            else:
-                lst[0] = "1"
-                checkbits += "1"
-
-        print(checkbits)
-        Hamming._fix_errors(checkbits[:count + 1], datalist, datalistcopy)
-        bin_result = Hamming._delete_control_bits(datalist, count)
-        string_result = Hamming._bin_to_str(''.join(bin_result))
-        return string_result
+    # @staticmethod
+    # def decode2(message):
+    #     datalist = list(message)
+    #     datalistcopy = list(message)
+    #
+    #     # расставляем пустые биты
+    #     count = int(log2(len(message)))
+    #     # count = 6
+    #     print(count)
+    #     for i in range(count):
+    #         pos = (2 ** i) - 1
+    #         # datalist.insert(pos, '*')
+    #         datalistcopy[pos] = '*'
+    #     print(datalistcopy)
+    #
+    #     check = 1
+    #     checkbits = []
+    #     while check <= len(datalist):
+    #         # берем в lst нужные биты для текущего бита
+    #         lst = []
+    #         for i in range(check - 1, len(datalistcopy), 2 * check):
+    #             lst.extend(datalistcopy[i:i + check])
+    #         print(check, lst)
+    #         check *= 2
+    #
+    #         # считаем единички
+    #         counter = 0
+    #         for u in range(len(lst)):
+    #             if lst[u] == "1":
+    #                 counter += 1
+    #         # ставим наш бит
+    #         if counter % 2 == 0:
+    #             lst[0] = "0"
+    #             checkbits += "0"
+    #         else:
+    #             lst[0] = "1"
+    #             checkbits += "1"
+    #
+    #     print(checkbits)
+    #     Hamming._fix_errors(checkbits[:count + 1], datalist, datalistcopy)
+    #     bin_result = Hamming._delete_control_bits(datalist, count)
+    #     string_result = Hamming._bin_to_str(''.join(bin_result))
+    #     return string_result
 
     def _fix_errors(self, original, encoded):
         error_bits = []

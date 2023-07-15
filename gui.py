@@ -94,5 +94,6 @@ class GUI:
         if not text:
             return
         mistake = '0' if mistake == '' else mistake
-        hamming_message = Hamming.encode(text, mistake)
+        hm = Hamming()
+        hamming_message = hm.encode(text, mistake)
         self.hamming_message.config(text=hamming_message)

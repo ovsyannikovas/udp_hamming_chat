@@ -35,7 +35,8 @@ class Backend:
                 return
 
             hamming_message = data.decode('utf-8')
-            hamming_decoded_message = Hamming.decode(hamming_message)
+            hm = Hamming()
+            hamming_decoded_message = hm.decode(hamming_message)
             self._write_to_history(hamming_decoded_message, hamming_message, addr[0], self.host)
 
     def send(self, text_message, hamming_message):
